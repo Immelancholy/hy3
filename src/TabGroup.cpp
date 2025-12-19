@@ -405,12 +405,12 @@ CHyprColor Hy3TabBarEntry::mergeColors(
 	active_v *= active_monitor_v;
 
 	return merge_colors(
-	    std::make_pair(active_v, active),
-	    std::make_pair(urgent_v, urgent),
-	    std::make_pair(focused_v, focused),
-	    std::make_pair(locked_v, locked),
-	    std::make_pair(active_alt_monitor_v, active_alt_monitor),
-	    std::make_pair(inactive_v, inactive)
+		std::pair<double, CHyprColor>{static_cast<double>(active_v), active},
+						std::pair<double, CHyprColor>{static_cast<double>(urgent_v), urgent},
+						std::pair<double, CHyprColor>{static_cast<double>(focused_v), focused},
+						std::pair<double, CHyprColor>{static_cast<double>(locked_v), locked},
+						std::pair<double, CHyprColor>{static_cast<double>(active_alt_monitor_v), active_alt_monitor},
+						std::pair<double, CHyprColor>{static_cast<double>(inactive_v), inactive}
 	);
 }
 

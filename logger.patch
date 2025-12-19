@@ -1,0 +1,39 @@
+diff --git a/src/dispatchers.cpp b/src/dispatchers.cpp
+index b646ac4..6f12941 100644
+--- a/src/dispatchers.cpp
++++ b/src/dispatchers.cpp
+@@ -3,6 +3,7 @@
+ #include <hyprland/src/Compositor.hpp>
+ #include <hyprland/src/desktop/DesktopTypes.hpp>
+ #include <hyprland/src/plugins/PluginAPI.hpp>
++#include <hyprland/src/debug/log/Logger.hpp>
+ #include <hyprutils/string/String.hpp>
+ 
+ #include "dispatchers.hpp"
+@@ -198,7 +199,8 @@ static SDispatchResult dispatch_focustab(std::string value) {
+ 		focus = TabFocus::Index;
+ 		if (!isNumber(args[i])) return SDispatchResult {};
+ 		index = std::stoi(args[i]);
+-		Debug::log(LOG, "Focus index '%s' -> %d, errno: %d", args[i].c_str(), index, errno);
++		Log::logger->log(Log::DEBUG, "Focus index '%s' -> %d, errno: %d", args[i].c_str(), index, errno);
++
+ 	} else return SDispatchResult {};
+ 
+ 	i++;
+diff --git a/src/log.hpp b/src/log.hpp
+index b86ce36..f3e6fd5 100644
+--- a/src/log.hpp
++++ b/src/log.hpp
+@@ -1,9 +1,10 @@
+ #pragma once
+ 
+-#include <hyprland/src/debug/Log.hpp>
++#include <hyprland/src/debug/log/Logger.hpp>
+ 
+ template <typename... Args>
+ void hy3_log(eLogLevel level, std::format_string<Args...> fmt, Args&&... args) {
+ 	auto msg = std::vformat(fmt.get(), std::make_format_args(args...));
+-	Debug::log(level, "[hy3] {}", msg);
++	Log::logger->log(Log::DEBUG, "[hy3] {}", msg);
++
+ }

@@ -3,6 +3,7 @@
 #include <hyprland/src/Compositor.hpp>
 #include <hyprland/src/desktop/DesktopTypes.hpp>
 #include <hyprland/src/plugins/PluginAPI.hpp>
+#include <hyprland/src/debug/log/Logger.hpp>
 #include <hyprutils/string/String.hpp>
 
 #include "dispatchers.hpp"
@@ -198,7 +199,8 @@ static SDispatchResult dispatch_focustab(std::string value) {
 		focus = TabFocus::Index;
 		if (!isNumber(args[i])) return SDispatchResult {};
 		index = std::stoi(args[i]);
-		Debug::log(LOG, "Focus index '%s' -> %d, errno: %d", args[i].c_str(), index, errno);
+		Log::logger->log(Log::DEBUG, "Focus index '{}' -> {}, errno: {}", args[i], index, errno);
+
 	} else return SDispatchResult {};
 
 	i++;
