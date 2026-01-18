@@ -2,11 +2,12 @@
 
 #include <GLES2/gl2.h>
 #include <hyprland/src/render/OpenGL.hpp>
+#include <hyprland/src/render/Shader.hpp>
 
 class Hy3Shaders {
 public:
 	struct {
-		GLuint program;
+		SP<CShader> shader;
 		GLuint posAttrib;
 		GLint proj;
 		GLint monitorSize;

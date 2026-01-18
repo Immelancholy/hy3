@@ -35,7 +35,7 @@ void Hy3Render::renderTab(
 
 	auto glMatrix = rdata.projection.copy().multiply(matrix);
 
-	g_pHyprOpenGL->useProgram(shader.program);
+	g_pHyprOpenGL->useShader(shader.shader);
 
 #ifndef GLES2
 	glUniformMatrix3fv(shader.proj, 1, GL_TRUE, glMatrix.getMatrix().data());
@@ -85,7 +85,9 @@ void Hy3Render::renderTab(
 	glUniform1f(shader.outerRadius, radius);
 	glUniform1f(shader.borderWidth, borderWidth);
 
-	glVertexAttribPointer(shader.posAttrib, 2, GL_FLOAT, GL_FALSE, 0, fullVerts);
+	// fullVerts is now std::array<SVertex, 4> where SVertex has {x, y, u, v}
+	// stride needs to account for all 4 floats per vertex
+	glVertexAttribPointer(shader.posAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(SVertex), fullVerts.data());
 	glEnableVertexAttribArray(shader.posAttrib);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
