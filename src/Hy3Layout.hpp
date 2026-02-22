@@ -161,6 +161,7 @@ public:
 	static void windowGroupUpdateRecursiveHook(void*, SCallbackInfo&, std::any);
 	static void tickHook(void*, SCallbackInfo&, std::any);
 	static void mouseButtonHook(void*, SCallbackInfo&, std::any);
+	static void activeWindowHook(void*, SCallbackInfo&, std::any);
 
 	// Window created/removed handlers (called from newTarget/removeTarget)
 	void onWindowCreatedTiling(PHLWINDOW window);

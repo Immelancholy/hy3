@@ -51,6 +51,7 @@ static SP<HOOK_CALLBACK_FN> windowTitleHookPtr;
 static SP<HOOK_CALLBACK_FN> urgentHookPtr;
 static SP<HOOK_CALLBACK_FN> tickHookPtr;
 static SP<HOOK_CALLBACK_FN> mouseButtonPtr;
+static SP<HOOK_CALLBACK_FN> activeWindowHookPtr;
 
 Hy3Layout::Hy3Layout() {
 	s_instances.push_back(this);
@@ -101,6 +102,9 @@ void Hy3Layout::registerHooks() {
 
 	mouseButtonPtr =
 	    HyprlandAPI::registerCallbackDynamic(PHANDLE, "mouseButton", &Hy3Layout::mouseButtonHook);
+
+	activeWindowHookPtr =
+	    HyprlandAPI::registerCallbackDynamic(PHANDLE, "activeWindow", &Hy3Layout::activeWindowHook);
 }
 
 PHLWORKSPACE workspace_for_action(bool allow_fullscreen) {
@@ -1673,6 +1677,14 @@ void Hy3Layout::mouseButtonHook(void*, SCallbackInfo& info, std::any data) {
 	tab_node->recalcSizePosRecursive();
 
 	info.cancelled = true;
+}
+
+void Hy3Layout::activeWindowHook(void*, SCallbackInfo&, std::any data) {
+	auto window = std::any_cast<PHLWINDOW>(data);
+	if (!window) return;
+	auto* layout = Hy3Layout::getLayoutForWorkspace(window->m_workspace.get());
+	if (!layout) return;
+	layout->onWindowFocusChange(window);
 }
 
 Hy3Node* Hy3Layout::getNodeFromWindow(const CWindow* window) {
