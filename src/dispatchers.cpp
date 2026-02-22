@@ -26,13 +26,13 @@ static SDispatchResult dispatch_makegroup(std::string value) {
 	}
 
 	if (args[0] == "h") {
-		g_Hy3Layout->makeGroupOnWorkspace(workspace.get(), Hy3GroupLayout::SplitH, ephemeral, toggle);
+		Hy3Layout::getActiveLayout()->makeGroupOnWorkspace(workspace.get(), Hy3GroupLayout::SplitH, ephemeral, toggle);
 	} else if (args[0] == "v") {
-		g_Hy3Layout->makeGroupOnWorkspace(workspace.get(), Hy3GroupLayout::SplitV, ephemeral, toggle);
+		Hy3Layout::getActiveLayout()->makeGroupOnWorkspace(workspace.get(), Hy3GroupLayout::SplitV, ephemeral, toggle);
 	} else if (args[0] == "tab") {
-		g_Hy3Layout->makeGroupOnWorkspace(workspace.get(), Hy3GroupLayout::Tabbed, ephemeral, toggle);
+		Hy3Layout::getActiveLayout()->makeGroupOnWorkspace(workspace.get(), Hy3GroupLayout::Tabbed, ephemeral, toggle);
 	} else if (args[0] == "opposite") {
-		g_Hy3Layout->makeOppositeGroupOnWorkspace(workspace.get(), ephemeral);
+		Hy3Layout::getActiveLayout()->makeOppositeGroupOnWorkspace(workspace.get(), ephemeral);
 	}
 	return SDispatchResult {};
 }
@@ -44,17 +44,17 @@ static SDispatchResult dispatch_changegroup(std::string value) {
 	auto args = CVarList(value);
 
 	if (args[0] == "h") {
-		g_Hy3Layout->changeGroupOnWorkspace(workspace.get(), Hy3GroupLayout::SplitH);
+		Hy3Layout::getActiveLayout()->changeGroupOnWorkspace(workspace.get(), Hy3GroupLayout::SplitH);
 	} else if (args[0] == "v") {
-		g_Hy3Layout->changeGroupOnWorkspace(workspace.get(), Hy3GroupLayout::SplitV);
+		Hy3Layout::getActiveLayout()->changeGroupOnWorkspace(workspace.get(), Hy3GroupLayout::SplitV);
 	} else if (args[0] == "tab") {
-		g_Hy3Layout->changeGroupOnWorkspace(workspace.get(), Hy3GroupLayout::Tabbed);
+		Hy3Layout::getActiveLayout()->changeGroupOnWorkspace(workspace.get(), Hy3GroupLayout::Tabbed);
 	} else if (args[0] == "untab") {
-		g_Hy3Layout->untabGroupOnWorkspace(workspace.get());
+		Hy3Layout::getActiveLayout()->untabGroupOnWorkspace(workspace.get());
 	} else if (args[0] == "toggletab") {
-		g_Hy3Layout->toggleTabGroupOnWorkspace(workspace.get());
+		Hy3Layout::getActiveLayout()->toggleTabGroupOnWorkspace(workspace.get());
 	} else if (args[0] == "opposite") {
-		g_Hy3Layout->changeGroupToOppositeOnWorkspace(workspace.get());
+		Hy3Layout::getActiveLayout()->changeGroupToOppositeOnWorkspace(workspace.get());
 	}
 	return SDispatchResult {};
 }
@@ -67,7 +67,7 @@ static SDispatchResult dispatch_setephemeral(std::string value) {
 
 	bool ephemeral = args[0] == "true";
 
-	g_Hy3Layout->changeGroupEphemeralityOnWorkspace(workspace.get(), ephemeral);
+	Hy3Layout::getActiveLayout()->changeGroupEphemeralityOnWorkspace(workspace.get(), ephemeral);
 	return SDispatchResult {};
 }
 
@@ -100,7 +100,7 @@ static SDispatchResult dispatch_movewindow(std::string value) {
 			i++;
 		}
 
-		g_Hy3Layout->shiftWindow(workspace.get(), shift.value(), once, visible);
+		Hy3Layout::getActiveLayout()->shiftWindow(workspace.get(), shift.value(), once, visible);
 	}
 	return SDispatchResult {};
 }
@@ -118,7 +118,7 @@ static SDispatchResult dispatch_movefocus(std::string value) {
 	auto shift = parseShiftArg(args[argi++]);
 	if (!shift) return SDispatchResult {};
 	if (workspace->m_hasFullscreenWindow) {
-		g_Hy3Layout->focusMonitor(shift.value());
+		Hy3Layout::getActiveLayout()->focusMonitor(shift.value());
 		return SDispatchResult {};
 	}
 
@@ -128,7 +128,7 @@ static SDispatchResult dispatch_movefocus(std::string value) {
 	if (args[argi] == "nowarp") warp_cursor = false;
 	else if (args[argi] == "warp") warp_cursor = true;
 
-	g_Hy3Layout->shiftFocus(workspace.get(), shift.value(), visible, warp_cursor);
+	Hy3Layout::getActiveLayout()->shiftFocus(workspace.get(), shift.value(), visible, warp_cursor);
 	return SDispatchResult {};
 }
 
@@ -136,12 +136,14 @@ static SDispatchResult dispatch_togglefocuslayer(std::string value) {
 	auto workspace = workspace_for_action();
 	if (!valid(workspace)) return SDispatchResult {};
 
-	g_Hy3Layout->toggleFocusLayer(workspace.get(), value != "nowarp");
+	Hy3Layout::getActiveLayout()->toggleFocusLayer(workspace.get(), value != "nowarp");
 	return SDispatchResult {};
 }
 
 static SDispatchResult dispatch_warpcursor(std::string value) {
-	g_Hy3Layout->warpCursor(); 
+	auto* layout = Hy3Layout::getActiveLayout();
+	if (!layout) return SDispatchResult {};
+	layout->warpCursor(); 
 	return SDispatchResult {};
 }
 
@@ -162,7 +164,7 @@ static SDispatchResult dispatch_move_to_workspace(std::string value) {
 	    follow
 	    && ((!*no_cursor_warps && args[2] != "nowarp") || (*no_cursor_warps && args[2] == "warp"));
 
-	g_Hy3Layout->moveNodeToWorkspace(origin_workspace.get(), workspace, follow, warp_cursor);
+	Hy3Layout::getActiveLayout()->moveNodeToWorkspace(origin_workspace.get(), workspace, follow, warp_cursor);
 	return SDispatchResult {};
 }
 
@@ -170,12 +172,12 @@ static SDispatchResult dispatch_changefocus(std::string arg) {
 	auto workspace = workspace_for_action();
 	if (!valid(workspace)) return SDispatchResult {};
 
-	if (arg == "top") g_Hy3Layout->changeFocus(workspace.get(), FocusShift::Top);
-	else if (arg == "bottom") g_Hy3Layout->changeFocus(workspace.get(), FocusShift::Bottom);
-	else if (arg == "raise") g_Hy3Layout->changeFocus(workspace.get(), FocusShift::Raise);
-	else if (arg == "lower") g_Hy3Layout->changeFocus(workspace.get(), FocusShift::Lower);
-	else if (arg == "tab") g_Hy3Layout->changeFocus(workspace.get(), FocusShift::Tab);
-	else if (arg == "tabnode") g_Hy3Layout->changeFocus(workspace.get(), FocusShift::TabNode);
+	if (arg == "top") Hy3Layout::getActiveLayout()->changeFocus(workspace.get(), FocusShift::Top);
+	else if (arg == "bottom") Hy3Layout::getActiveLayout()->changeFocus(workspace.get(), FocusShift::Bottom);
+	else if (arg == "raise") Hy3Layout::getActiveLayout()->changeFocus(workspace.get(), FocusShift::Raise);
+	else if (arg == "lower") Hy3Layout::getActiveLayout()->changeFocus(workspace.get(), FocusShift::Lower);
+	else if (arg == "tab") Hy3Layout::getActiveLayout()->changeFocus(workspace.get(), FocusShift::Tab);
+	else if (arg == "tabnode") Hy3Layout::getActiveLayout()->changeFocus(workspace.get(), FocusShift::TabNode);
 	return SDispatchResult {};
 }
 
@@ -213,7 +215,7 @@ static SDispatchResult dispatch_focustab(std::string value) {
 
 	if (args[i++] == "wrap") wrap_scroll = true;
 
-	g_Hy3Layout->focusTab(workspace.get(), focus, mouse, wrap_scroll, index);
+	Hy3Layout::getActiveLayout()->focusTab(workspace.get(), focus, mouse, wrap_scroll, index);
 	return SDispatchResult {};
 }
 
@@ -230,7 +232,7 @@ static SDispatchResult dispatch_setswallow(std::string arg) {
 		option = SetSwallowOption::Toggle;
 	} else return SDispatchResult {};
 
-	g_Hy3Layout->setNodeSwallow(workspace.get(), option);
+	Hy3Layout::getActiveLayout()->setNodeSwallow(workspace.get(), option);
 	return SDispatchResult {};
 }
 
@@ -238,7 +240,7 @@ static SDispatchResult dispatch_killactive(std::string value) {
 	auto workspace = workspace_for_action(true);
 	if (!valid(workspace)) return SDispatchResult {};
 
-	g_Hy3Layout->killFocusedNode(workspace.get());
+	Hy3Layout::getActiveLayout()->killFocusedNode(workspace.get());
 	return SDispatchResult {};
 }
 
@@ -264,7 +266,7 @@ static SDispatchResult dispatch_expand(std::string value) {
 	else if (args[1] == "maximize_only") fs_expand = ExpandFullscreenOption::MaximizeOnly;
 	else if (args[1] != "") return SDispatchResult {};
 
-	g_Hy3Layout->expand(workspace.get(), expand, fs_expand);
+	Hy3Layout::getActiveLayout()->expand(workspace.get(), expand, fs_expand);
 	return SDispatchResult {};
 }
 
@@ -276,7 +278,7 @@ static SDispatchResult dispatch_locktab(std::string arg) {
 	if (arg == "lock") mode = TabLockMode::Lock;
 	else if (arg == "unlock") mode = TabLockMode::Unlock;
 
-	g_Hy3Layout->setTabLock(workspace.get(), mode);
+	Hy3Layout::getActiveLayout()->setTabLock(workspace.get(), mode);
 	return SDispatchResult {};
 }
 
@@ -285,22 +287,28 @@ static SDispatchResult dispatch_equalize(std::string arg) {
 	if (!valid(workspace)) return SDispatchResult {};
 
 	bool recursive = (arg == "workspace");
-	g_Hy3Layout->equalize(workspace.get(), recursive);
+	Hy3Layout::getActiveLayout()->equalize(workspace.get(), recursive);
 	return SDispatchResult {};
 }
 
 static SDispatchResult dispatch_debug(std::string arg) {
 	auto workspace = workspace_for_action();
-
-	auto* root = g_Hy3Layout->getWorkspaceRootGroup(workspace.get());
 	if (!valid(workspace)) {
 		hy3_log(LOG, "DEBUG NODES: no nodes on workspace");
 		return { .success = false, .error = "no nodes on workspace" };
-	} else {
-		hy3_log(LOG, "DEBUG NODES\n{}", root->debugNode().c_str());
-		return { .success = false, .error = root->debugNode() };
 	}
-	return SDispatchResult {};
+
+	auto* layout = Hy3Layout::getActiveLayout();
+	if (!layout) return { .success = false, .error = "no hy3 layout active" };
+
+	auto* root = layout->getWorkspaceRootGroup(workspace.get());
+	if (!root) {
+		hy3_log(LOG, "DEBUG NODES: no root group on workspace");
+		return { .success = false, .error = "no root group on workspace" };
+	}
+
+	hy3_log(LOG, "DEBUG NODES\n{}", root->debugNode().c_str());
+	return { .success = false, .error = root->debugNode() };
 }
 
 void registerDispatchers() {

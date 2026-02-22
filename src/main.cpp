@@ -82,8 +82,14 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
 
 #undef CONF
 
-	g_Hy3Layout = std::make_unique<Hy3Layout>();
-	HyprlandAPI::addLayout(PHANDLE, "hy3", g_Hy3Layout.get());
+	HyprlandAPI::addTiledAlgo(
+	    PHANDLE,
+	    "hy3",
+	    &typeid(Hy3Layout),
+	    []() -> UP<Layout::ITiledAlgorithm> {
+	        return makeUnique<Hy3Layout>();
+	    }
+	);
 
 	registerDispatchers();
 
@@ -92,4 +98,6 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
 	return {"hy3", "i3 like layout for hyprland", "outfoxxed", "0.1"};
 }
 
-APICALL EXPORT void PLUGIN_EXIT() {}
+APICALL EXPORT void PLUGIN_EXIT() {
+	HyprlandAPI::removeAlgo(PHANDLE, "hy3");
+}

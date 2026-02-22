@@ -660,7 +660,8 @@ void Hy3TabGroup::tick() {
 		auto has_fullscreen = this->workspace->m_hasFullscreenWindow;
 
 		if (!has_fullscreen && *no_gaps_when_only) {
-			auto root_node = g_Hy3Layout->getWorkspaceRootGroup(this->workspace.get());
+			auto* layout = Hy3Layout::getLayoutForWorkspace(this->workspace.get());
+			auto root_node = layout ? layout->getWorkspaceRootGroup(this->workspace.get()) : nullptr;
 			has_fullscreen = root_node != nullptr && root_node->data.as_group().children.size() == 1
 			              && root_node->data.as_group().children.front()->data.is_window();
 		}

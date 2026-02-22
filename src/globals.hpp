@@ -10,7 +10,6 @@
 #include "log.hpp"
 
 inline HANDLE PHANDLE = nullptr;
-inline std::unique_ptr<Hy3Layout> g_Hy3Layout;
 
 inline void errorNotif() {
 	HyprlandAPI::addNotificationV2(

@@ -12,7 +12,7 @@ enum class GroupEphemeralityOption {
 #include <list>
 #include <set>
 
-#include <hyprland/src/layout/IHyprLayout.hpp>
+#include <hyprland/src/layout/algorithm/TiledAlgorithm.hpp>
 
 enum class ShiftDirection {
 	Left,
@@ -82,34 +82,24 @@ enum class ExpandFullscreenOption {
 
 PHLWORKSPACE workspace_for_action(bool allow_fullscreen = false);
 
-class Hy3Layout: public IHyprLayout {
+class Hy3Layout: public Layout::ITiledAlgorithm {
 public:
-	void onWindowCreatedTiling(PHLWINDOW, eDirection = DIRECTION_DEFAULT) override;
-	void onWindowRemovedTiling(PHLWINDOW) override;
-	void onWindowFocusChange(PHLWINDOW) override;
-	bool isWindowTiled(PHLWINDOW) override;
-	void recalculateMonitor(const MONITORID& monitor_id) override;
-	void recalculateWindow(PHLWINDOW) override;
-	void resizeActiveWindow(const Vector2D& delta, eRectCorner corner, PHLWINDOW pWindow = nullptr)
-	    override;
-	void
-	fullscreenRequestForWindow(PHLWINDOW, eFullscreenMode current_mode, eFullscreenMode target_mode)
-	    override;
-	std::any layoutMessage(SLayoutMessageHeader header, std::string content) override;
-	SWindowRenderLayoutHints requestRenderHints(PHLWINDOW) override;
-	void switchWindows(PHLWINDOW, PHLWINDOW) override;
-	void moveWindowTo(PHLWINDOW, const std::string& direction, bool silent) override;
-	void alterSplitRatio(PHLWINDOW, float, bool) override;
-	std::string getLayoutName() override;
-	PHLWINDOW getNextWindowCandidate(PHLWINDOW) override;
-	void replaceWindowDataWith(PHLWINDOW from, PHLWINDOW to) override;
-	bool isWindowReachable(PHLWINDOW) override;
-	void bringWindowToTop(PHLWINDOW) override;
-	Vector2D predictSizeForNewWindowTiled() override { return Vector2D(); }
+	Hy3Layout();
+	virtual ~Hy3Layout();
 
-	void onEnable() override;
-	void onDisable() override;
+	// ITiledAlgorithm interface
+	void newTarget(SP<Layout::ITarget> target) override;
+	void movedTarget(SP<Layout::ITarget> target, std::optional<Vector2D> focalPoint = std::nullopt) override;
+	void removeTarget(SP<Layout::ITarget> target) override;
+	void resizeTarget(const Vector2D& delta, SP<Layout::ITarget> target, Layout::eRectCorner corner = Layout::CORNER_NONE) override;
+	void recalculate() override;
+	void swapTargets(SP<Layout::ITarget> a, SP<Layout::ITarget> b) override;
+	void moveTargetInDirection(SP<Layout::ITarget> t, Math::eDirection dir, bool silent) override;
+	SP<Layout::ITarget> getNextCandidate(SP<Layout::ITarget> old) override;
+	std::expected<void, std::string> layoutMsg(const std::string_view& sv) override;
+	std::optional<Vector2D> predictSizeForNewTarget() override;
 
+	// hy3-specific methods
 	void insertNode(Hy3Node& node);
 	void makeGroupOnWorkspace(
 	    const CWorkspace* workspace,
@@ -172,10 +162,23 @@ public:
 	static void tickHook(void*, SCallbackInfo&, std::any);
 	static void mouseButtonHook(void*, SCallbackInfo&, std::any);
 
-	std::list<Hy3Node> nodes;
-	std::list<Hy3TabGroup> tab_groups;
+	// Window created/removed handlers (called from newTarget/removeTarget)
+	void onWindowCreatedTiling(PHLWINDOW window);
+	void onWindowRemovedTiling(PHLWINDOW window);
+	void onWindowFocusChange(PHLWINDOW window);
+
+	// Static shared state across all per-workspace instances
+	static std::list<Hy3Node> nodes;
+	static std::list<Hy3TabGroup> tab_groups;
+
+	// Instance registry: find the Hy3Layout for a given workspace
+	static Hy3Layout* getLayoutForWorkspace(const CWorkspace* workspace);
+	static Hy3Layout* getActiveLayout();
+	static void registerHooks();
 
 private:
+	static std::vector<Hy3Layout*> s_instances;
+	static bool s_hooksRegistered;
 	Hy3Node* getNodeFromWindow(const Desktop::View::CWindow*);
 	void applyNodeDataToWindow(Hy3Node*, bool no_animation = false);
 
