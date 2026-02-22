@@ -176,6 +176,7 @@ public:
 	static Hy3Layout* getLayoutForWorkspace(const CWorkspace* workspace);
 	static Hy3Layout* getActiveLayout();
 	static void registerHooks();
+	static void cleanupStatics();
 
 private:
 	static std::vector<Hy3Layout*> s_instances;

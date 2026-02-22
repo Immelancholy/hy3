@@ -6,6 +6,7 @@
 
 #include "dispatchers.hpp"
 #include "globals.hpp"
+#include "Hy3Layout.hpp"
 
 APICALL EXPORT std::string PLUGIN_API_VERSION() { return HYPRLAND_API_VERSION; }
 
@@ -99,5 +100,6 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
 }
 
 APICALL EXPORT void PLUGIN_EXIT() {
+	Hy3Layout::cleanupStatics();
 	HyprlandAPI::removeAlgo(PHANDLE, "hy3");
 }

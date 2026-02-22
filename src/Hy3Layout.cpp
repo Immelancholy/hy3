@@ -107,6 +107,22 @@ void Hy3Layout::registerHooks() {
 	    HyprlandAPI::registerCallbackDynamic(PHANDLE, "activeWindow", &Hy3Layout::activeWindowHook);
 }
 
+void Hy3Layout::cleanupStatics() {
+	// Reset hook pointers (releases the callbacks)
+	renderHookPtr.reset();
+	windowTitleHookPtr.reset();
+	urgentHookPtr.reset();
+	tickHookPtr.reset();
+	mouseButtonPtr.reset();
+	activeWindowHookPtr.reset();
+
+	// Clear shared static data
+	nodes.clear();
+	tab_groups.clear();
+	s_instances.clear();
+	s_hooksRegistered = false;
+}
+
 PHLWORKSPACE workspace_for_action(bool allow_fullscreen) {
 	if (Hy3Layout::getActiveLayout() == nullptr) return nullptr;
 
